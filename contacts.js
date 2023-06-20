@@ -12,17 +12,33 @@ async function listContacts() {
 async function getContactById(contactId) {
   const data = await listContacts();
   const result = data.find((e) => {
-    return e.contactId === contactId;
+    return e.id === contactId;
   });
   return result || null;
 }
 
-function removeContact(contactId) {
-  // ...твой код. Возвращает объект удаленного контакта. Возвращает null, если объект с таким id не найден.
+async function removeContact(contactId) {
+  const data = await listContacts();
+  const index = data.findIndex((e) => e.id === contactId);
+  if (index === -1) {
+    return null;
+  }
+  const [result] = data.splice(index, 1);
+  await fs.writeFile(contactsPath, JSON.stringify(data, null, 2));
+  return result;
 }
 
-function addContact(name, email, phone) {
-
+async function addContact(name, email, phone) {
+  const data = await listContacts();
+  const newContact = {
+    id: nanoid(),
+    name,
+    email,
+    phone,
+  };
+  data.push(newContact);
+  await fs.writeFile(contactsPath, JSON.stringify(data, null, 2));
+  return newContact;
 }
 
 module.exports = { listContacts, getContactById, removeContact, addContact };
